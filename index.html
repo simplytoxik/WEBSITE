@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Diagnosis Predictor</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Medical Diagnosis Predictor</h1>
+    <form id="prediction-form">
+        Age: <input type="number" name="age" required><br>
+        Gender: 
+        <select name="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select><br>
+        Height (cm): <input type="number" name="height" required><br>
+        Weight (kg): <input type="number" name="weight" required><br>
+        Systolic BP: <input type="number" name="systolic" required><br>
+        Diastolic BP: <input type="number" name="diastolic" required><br>
+        <button type="submit">Predict</button>
+    </form>
+    <h2>Prediction: <span id="prediction-result"></span></h2>
+
+    <script>
+        $('#prediction-form').on('submit', function(event) {
+            event.preventDefault();
+            const formData = $(this).serializeArray().reduce((obj, item) => {
+                obj[item.name] = item.value;
+                return obj;
+            }, {});
+
+            $.ajax({
+                type: 'POST',
+                url: '/predict',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    $('#prediction-result').text(response.diagnosis);
+                },
+                error : function(error) {
+                    $('#prediction-result').text('Error in prediction: ' + error.responseText);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
