@@ -48,7 +48,7 @@ def load_and_preprocess_data():
         y = le.fit_transform(y)
         label_encoders['diagnosis'] = le
     
-    return X_scaled, y, scaler, label_encoders
+    return X_scaled, y, scaler, label_encoders, X.columns  # Return column names for prediction
 
 
 # Train model
@@ -58,13 +58,16 @@ def train_model(X, y):
     return model
 
 # Generate and preprocess data
-X, y, scaler, label_encoders = load_and_preprocess_data()
+X, y, scaler, label_encoders, feature_names = load_and_preprocess_data()
 trained_model = train_model(X, y)
 
 # Function to predict diagnosis
-def predict_diagnosis(model, scaler, label_encoders, age, gender, height, weight, systolic, diastolic):
-    # Prepare input data
-    input_data = np.array([[age, gender, height, weight, systolic, diastolic]])
+def predict_diagnosis(model, scaler, label_encoders, feature_names, age, gender, height, weight, systolic, diastolic):
+    # Ensure that gender is encoded as numeric (0 for Female, 1 for Male)
+    gender_encoded = 1 if gender == 'Male' else 0
+    
+    # Prepare input data as DataFrame with feature names, applying the gender encoding
+    input_data = pd.DataFrame([[age, gender_encoded, height, weight, systolic, diastolic]], columns=feature_names)
     
     # Scale input data
     input_scaled = scaler.transform(input_data)
@@ -91,7 +94,7 @@ def predict():
     systolic = int(data['systolic'])
     diastolic = int(data['diastolic'])
     
-    diagnosis = predict_diagnosis(trained_model, scaler, label_encoders, age, gender, height, weight, systolic, diastolic)
+    diagnosis = predict_diagnosis(trained_model, scaler, label_encoders, feature_names, age, gender, height, weight, systolic, diastolic)
     
     return jsonify({'diagnosis': diagnosis})
 
