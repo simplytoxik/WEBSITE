@@ -2,9 +2,10 @@ from flask import Flask, request, jsonify, render_template
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.ensemble import RandomForestClassifier  # Example model
+from sklearn.ensemble import RandomForestClassifier
 import random
 from faker import Faker
+import os
 
 app = Flask(__name__)
 
@@ -65,10 +66,6 @@ def predict_diagnosis(model, scaler, label_encoders, age, gender, height, weight
     # Prepare input data
     input_data = np.array([[age, gender, height, weight, systolic, diastolic]])
     
-    # Encode gender if necessary
-    gender_encoded = 1 if gender == 'Male' else 0  # Assuming binary encoding for gender
-    input_data[0][1] = gender_encoded  # Replace gender with encoded value
-
     # Scale input data
     input_scaled = scaler.transform(input_data)
     
@@ -88,7 +85,7 @@ def home():
 def predict():
     data = request.get_json()
     age = int(data['age'])
-    gender = data['gender']
+    gender = data['gender']  # Assume gender is passed as 0 or 1 (Male=1, Female=0)
     height = float(data['height'])
     weight = float(data['weight'])
     systolic = int(data['systolic'])
@@ -99,4 +96,5 @@ def predict():
     return jsonify({'diagnosis': diagnosis})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Use '0.0.0.0' for public access and dynamically assigned port
+    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
